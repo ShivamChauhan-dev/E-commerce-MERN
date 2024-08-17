@@ -1,11 +1,12 @@
 // import React from 'react'
-import './AddProduct.css'
-import upload_area from '../../assets/upload_area.svg'
-import { useState } from 'react'
+import { useState } from 'react';
+import './AddProduct.css';
+import upload_area from '../../assets/upload_area.svg';
+import axiosConfig from '../../axiosConfig'; // Import the Axios instance
 
 const AddProduct = () => {
 
-  const [image, setImage] = useState(false);  // Initialize image with null
+  const [image, setImage] = useState(null);  // Initialize image with null
   const [productDetails, setProductDetails] = useState({
     name: "",
     image: "",
@@ -31,31 +32,22 @@ const AddProduct = () => {
       let formData = new FormData();
       formData.append('product', image);
 
-      await fetch('http://localhost:4000/upload', {
-        method: 'POST',
+      // Upload image
+      responseData = await axiosConfig.post('products/upload', formData, {
         headers: {
-          Accept: 'application/json',
-        },
-        body: formData,
-      })
-        .then((resp) => resp.json())
-        .then((data) => { responseData = data });
+          'Content-Type': 'multipart/form-data',
+        }
+      }).then((response) => response.data);
 
       if (responseData.success) {
         product.image = responseData.image_url;
         console.log(product);
-        await fetch('http://localhost:4000/addproduct', {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(product),
-        })
-          .then((resp) => resp.json())
-          .then((data) => {
-            data.success ? alert("Product Added") : alert("Failed");
-          });
+
+        // Add product details
+        const addProductResponse = await axiosConfig.post('products/addproduct', product);
+        const data = addProductResponse.data;
+
+        data.success ? alert("Product Added") : alert("Failed");
       } else {
         alert("Image upload failed");
       }
