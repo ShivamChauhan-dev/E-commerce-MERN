@@ -1,4 +1,5 @@
 import React, { createContext, useEffect, useState } from "react";
+import axiosConfig from "../axiosConfig"
 
 export const ShopContext = createContext(null);
 
@@ -12,68 +13,68 @@ const getDefaultCart = () => {
 
 const ShopContextProvider = (props) => {
 
-  const [all_product, setAll_product] = useState([])
-
+  const [all_product, setAll_product] = useState([]);
   const [cartItems, setCartItems] = useState(getDefaultCart);
 
   useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axiosConfig.get('products/allproducts');
+        setAll_product(response.data);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
 
-    fetch('http://localhost:4000/allproducts')
-      .then((responce) => responce.json())
-      .then((data) => setAll_product(data))
+    const fetchCart = async () => {
+      if (localStorage.getItem('auth-token')) {
+        try {
+          const response = await axiosConfig.post('users/getcart', {}, {
+            headers: {
+              'auth-token': localStorage.getItem('auth-token'),
+            }
+          });
+          setCartItems(response.data);
+        } catch (error) {
+          console.error("Error fetching cart:", error);
+        }
+      }
+    };
 
+    fetchProducts();
+    fetchCart();
+  }, []);
 
-    if (localStorage.getItem('auth-token')) {
-      fetch('http://localhost:4000/getcart', {
-        method: 'POST',
-        headers: {
-          Accept: 'application/form-data',
-          'auth-token': `${localStorage.getItem('auth-token')}`,
-          'Content-Type': 'application/json',
-        },
-        body: "",
-      })
-        .then((responce) => responce.json())
-        .then((data) => setCartItems(data));
-    }
-
-  }, [])
-
-  const addToCart = (itemId) => {
+  const addToCart = async (itemId) => {
     setCartItems((prev) => ({ ...prev, [itemId]: prev[itemId] + 1 }));
 
     if (localStorage.getItem('auth-token')) {
-      fetch('http://localhost:4000/addtocart', {
-        method: 'POST',
-        headers: {
-          Accept: 'application/form-data',
-          'auth-token': `${localStorage.getItem('auth-token')}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ "itemId": itemId })
-      })
-        .then((responce) => responce.json())
-        .then((data) => console.log(data));
+      try {
+        await axiosConfig.post('users/addtocart', { itemId }, {
+          headers: {
+            'auth-token': localStorage.getItem('auth-token'),
+          }
+        });
+      } catch (error) {
+        console.error("Error adding to cart:", error);
+      }
     }
-
   };
 
-  const removeFromCart = (itemId) => {
+  const removeFromCart = async (itemId) => {
     setCartItems((prev) => ({ ...prev, [itemId]: prev[itemId] - 1 }));
-    if (localStorage.getItem('auth-token')) {
-      fetch('http://localhost:4000/removefromcart', {
-        method: 'POST',
-        headers: {
-          Accept: 'application/form-data',
-          'auth-token': `${localStorage.getItem('auth-token')}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ "itemId": itemId })
-      })
-        .then((responce) => responce.json())
-        .then((data) => console.log(data));
-    }
 
+    if (localStorage.getItem('auth-token')) {
+      try {
+        await axiosConfig.post('users/removefromcart', { itemId }, {
+          headers: {
+            'auth-token': localStorage.getItem('auth-token'),
+          }
+        });
+      } catch (error) {
+        console.error("Error removing from cart:", error);
+      }
+    }
   };
 
   const getTotaleCartAmount = () => {
@@ -81,7 +82,9 @@ const ShopContextProvider = (props) => {
     for (const item in cartItems) {
       if (cartItems[item] > 0) {
         let itemInfo = all_product.find((product) => product.id === Number(item));
-        totalAmount += itemInfo.new_price * cartItems[item];
+        if (itemInfo) {
+          totalAmount += itemInfo.new_price * cartItems[item];
+        }
       }
     }
     return totalAmount;
@@ -95,7 +98,7 @@ const ShopContextProvider = (props) => {
       }
     }
     return totalItem;
-  }
+  };
 
   const contextValue = { all_product, cartItems, addToCart, removeFromCart, getTotaleCartAmount, getTotaleCartItems };
 

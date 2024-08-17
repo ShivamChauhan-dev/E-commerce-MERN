@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './css/LoginSignup.css';
+import axiosConfig from "../axiosConfig";
 
 const LoginSignup = () => {
   const [state, setState] = useState("Login");
@@ -19,49 +20,38 @@ const LoginSignup = () => {
 
   const login = async () => {
     console.log("Login Function Executed", formData);
-    let responseData;
+    try {
+      const response = await axiosConfig.post('users/login', formData);
+      const responseData = response.data;
 
-    await fetch('http://localhost:4000/login', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(formData),
-    })
-      .then((response) => response.json())
-      .then((data) => responseData = data);
-
-    if (responseData.success) {
-      localStorage.setItem('auth-token', responseData.token);
-      window.location.replace("/");
-    } else {
-      alert(responseData.error || "Login failed");
+      if (responseData.success) {
+        localStorage.setItem('auth-token', responseData.token);
+        window.location.replace("/");
+      } else {
+        alert(responseData.error || "Login failed");
+      }
+    } catch (error) {
+      console.error("Error logging in:", error);
+      alert("An error occurred. Please try again.");
     }
   };
 
   const signup = async () => {
     console.log("Sign Up Function Executed", formData);
-    let responseData;
+    try {
+      const response = await axiosConfig.post('users/signup', formData);
+      const responseData = response.data;
 
-    await fetch('http://localhost:4000/signup', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(formData),
-    })
-      .then((response) => response.json())
-      .then((data) => responseData = data);
-
-    if (responseData.success) {
-      localStorage.setItem('auth-token', responseData.token);
-      window.location.replace("/");
-    } else {
-      alert(responseData.error || "Signup failed");
+      if (responseData.success) {
+        localStorage.setItem('auth-token', responseData.token);
+        window.location.replace("/");
+      } else {
+        alert(responseData.error || "Signup failed");
+      }
+    } catch (error) {
+      console.error("Error signing up:", error);
+      alert("An error occurred. Please try again.");
     }
-
   };
 
   return (
