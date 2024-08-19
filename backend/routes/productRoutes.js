@@ -40,6 +40,8 @@ router.post('/addproduct', async (req, res) => {
     try {
         await product.save();
         res.json({ success: true, name: req.body.name });
+        console.log("product is added products")
+
     } catch (error) {
         res.status(500).json({ success: false, message: "Failed to save product" });
     }
@@ -49,19 +51,26 @@ router.post('/addproduct', async (req, res) => {
 router.post('/removeproduct', async (req, res) => {
     await Product.findOneAndDelete({ id: req.body.id });
     res.json({ success: true, name: req.body.name });
+    console.log("remove product")
+
 });
 
 // Get All Products
 router.get('/allproducts', async (req, res) => {
     let products = await Product.find({});
     res.send(products);
+    console.log("fetch all products")
 });
+
+
 
 // New Collection
 router.get('/newcollection', async (req, res) => {
     let products = await Product.find({});
     let newcollections = products.slice(1).slice(-8);
     res.send(newcollections);
+    console.log("fetch newcollections")
+
 });
 
 // Popular in Women
@@ -69,6 +78,20 @@ router.get('/popularinwomen', async (req, res) => {
     let products = await Product.find({ category: "women" });
     let popular_in_women = products.slice(0, 4);
     res.send(popular_in_women);
+    console.log("fetch popular_in_women")
+
 });
+
+router.get('/search', async (req, res) => {
+    const query = req.query.query.toLowerCase();
+    try {
+      const products = await Product.find({
+        name: { $regex: query, $options: 'i' }
+      });
+      res.json(products);
+    } catch (error) {
+      res.status(500).send('Server Error');
+    }
+  });
 
 module.exports = router;
