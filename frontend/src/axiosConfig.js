@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosConfig = axios.create({
-    baseURL: 'http://localhost:4000/',
+    baseURL: 'https://e-commerce-mern-2ygv.onrender.com:4000/',
     headers: {
         'Content-Type': 'application/json',
     }
