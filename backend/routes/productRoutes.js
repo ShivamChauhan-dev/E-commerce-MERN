@@ -1,10 +1,12 @@
-const port = process.env.PORT
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fetchUser = require('../middlewares/authMiddleware');
 const Product = require('../models/productModel');
 const { storage } = require('../utils/imageUpload');
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 const router = express.Router();
 const upload = multer({ storage });
@@ -13,7 +15,7 @@ const upload = multer({ storage });
 router.post("/upload", upload.single('product'), (req, res) => {
     res.json({
         success: 1,
-        image_url: `http://localhost:${port}/images/${req.file.filename}`
+        image_url: `${process.env.BASE_URL}:${process.env.PORT}/images/${req.file.filename}`
     });
 });
 
