@@ -15,7 +15,7 @@ const upload = multer({ storage });
 router.post("/upload", upload.single('product'), (req, res) => {
     res.json({
         success: 1,
-        image_url: `${process.env.BASE_URL}:${process.env.PORT}/images/${req.file.filename}`
+        image_url: `${process.env.BASE_URL}/images/${req.file.filename}`
     });
 });
 
