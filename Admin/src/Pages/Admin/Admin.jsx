@@ -6,7 +6,7 @@ import './Admin.css'
 import {Routes,Route} from 'react-router-dom'
 import Dashboard from './Dashboard'
 const Admin = () => {
-  return (
+  return ( ;
     <div className="admin">
       <Sidebar/>
       <Routes>
